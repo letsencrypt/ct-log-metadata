@@ -20,7 +20,7 @@ body:
         **CA Website URL:**
         > Provide the website you use for policy information for your CA, such as your CP, CPS, and test certificates.
 
-  - type: dropdown
+  - type: checkboxes
     id: logs
     attributes:
       label: CT Logs
