@@ -75,7 +75,7 @@ function accepted_roots() {
         exit 1
     fi
 
-    find common "${LOG}" -type f -exec openssl x509 -inform pem -in {} \; > "../${LOG}-accepted-roots.txt"
+    find common "${LOG}" -type f ! -name ".gitkeep" -exec openssl x509 -inform pem -in {} \; > "../${LOG}-accepted-roots.txt"
 }
 
 prep
