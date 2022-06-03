@@ -20,11 +20,11 @@ Sapling is a preproduction log, intended for certificates which are not publicly
 
 The [Boulder](https://github.com/letsencrypt/boulder/tree/main/test/ct-test-srv) codebase contains a piece of software named `ct-test-srv` which  implements RFC6962 `add-chain` and `add-pre-chain` endpoints. This software is sufficient for development and other testing environments. It does not persist data.
 
-# Submitting a Certificate Authority for inclusion in Let's Encrypt's Logs
+# Submitting a CA root for inclusion
 
-Create a [New Issue in this repository](https://github.com/letsencrypt/ct-log-metadata/issues/new) and fill out the provided template. All communication will be performed via responses to your Github Issue. Upon approval, Let's Encrypt staff will create a Pull Request to include your certificates and update our Certificate Transparency logs.
+Create a [New Issue](https://github.com/letsencrypt/ct-log-metadata/issues/new/choose) and fill out the provided template. All communication will be performed via responses to your Github Issue. Upon approval, Let's Encrypt staff will create a Pull Request to include your certificates and update our Certificate Transparency logs.
 
-# What roots are deployed to a log?
+# What roots does a log contain?
 
 Calling the `get-roots` endpoint for a [Trillian](https://github.com/google/trillian) backed log will return a JSON structure containing each root as base64 encoded DER.
 
