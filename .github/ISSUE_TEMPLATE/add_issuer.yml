@@ -28,8 +28,8 @@ body:
       options:
         - Oak (production)
         - Sapling (testing)
-      validations:
-        required: true
+    validations:
+      required: true
 
   - type: input
     id: rootcert
@@ -40,14 +40,14 @@ body:
         -----BEGIN CERTIFICATE-----
         ...
         -----END CERTIFICATE-----
-      validations:
-        required: true
+    validations:
+      required: true
 
   - type: checkboxes
     id: ctpolicy
     attributes:
       label: CT Policy
       description: Are you subscribed to the [Certificate Transparency Policy Google Group](https://groups.google.com/a/chromium.org/g/ct-policy) for Updates?
-    options:
-      - label: We are subscribed to the [Certificate Transparency Policy Google Group](https://groups.google.com/a/chromium.org/g/ct-policy)
-        required: True
+      options:
+        - label: We are subscribed to the [Certificate Transparency Policy Google Group](https://groups.google.com/a/chromium.org/g/ct-policy)
+          required: True
