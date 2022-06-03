@@ -1,0 +1,53 @@
+name: Add Issuer
+description: Use this template for request a new issuer be added to one or more of Let's Encrypt's Certificate Transparency logs
+title: "[Add Issuer]: "
+labels: ["triage"]
+assignees:
+  - jcjones
+  - aarongable
+  - pgporada
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Bugzilla Root Inclusion URL:**
+        > Provide the URL to your submission to the [CA Certificate Root Program component](https://bugzilla.mozilla.org/show_bug.cgi?id=647959). Only certificate authorities that are progressing toward being included in the Mozilla Root Program will be accepted for Let's Encrypt's production log(s). Please also provide a relevant CCADB URL for your publicly trusted root(s).
+
+  - type: markdown
+    attributes:
+      value: |
+        **CA Website URL:**
+        > Provide the website you use for policy information for your CA, such as your CP, CPS, and test certificates.
+
+  - type: dropdown
+    id: logs
+    attributes:
+      label: CT Logs
+      description: Which CT logs are you requesting to submit to?
+      options:
+        - Oak (production)
+        - Sapling (testing)
+      validations:
+        required: true
+
+  - type: input
+    id: rootcert
+    attributes:
+      label: Issuer Certificate
+      description: Paste in each of the root CA certificates to be considered here, in PEM format.
+      placeholder: |
+        -----BEGIN CERTIFICATE-----
+        ...
+        -----END CERTIFICATE-----
+      validations:
+        required: true
+
+  - type: checkboxes
+    id: ctpolicy
+    attributes:
+      label: CT Policy
+      description: Are you subscribed to the [Certificate Transparency Policy Google Group](https://groups.google.com/a/chromium.org/g/ct-policy) for Updates?
+    options:
+      - label: We are subscribed to the [Certificate Transparency Policy Google Group](https://groups.google.com/a/chromium.org/g/ct-policy)
+        required: True
