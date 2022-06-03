@@ -8,17 +8,19 @@ assignees:
   - pgporada
 
 body:
-  - type: markdown
+  - type: textarea
+    id: root-inclusion-url
     attributes:
-      value: |
-        **Bugzilla Root Inclusion URL:**
-        > Provide the URL to your submission to the [CA Certificate Root Program component](https://bugzilla.mozilla.org/show_bug.cgi?id=647959). Only certificate authorities that are progressing toward being included in the Mozilla Root Program will be accepted for Let's Encrypt's production log(s). Please also provide a relevant CCADB URL for your publicly trusted root(s).
+      label: Mozilla Bugzilla Root Inclusion URL
+      description: Provide the URL to your submission to the [CA Certificate Root Program component](https://bugzilla.mozilla.org/show_bug.cgi?id=647959). Only certificate authorities that are progressing toward being included in the Mozilla Root Program will be accepted for Let's Encrypt's production log(s). Please also provide a relevant CCADB URL for your publicly trusted root(s).
+      placeholder: https://<website>
 
-  - type: markdown
+  - type: textarea
+    id: ca-website-url
     attributes:
-      value: |
-        **CA Website URL:**
-        > Provide the website you use for policy information for your CA, such as your CP, CPS, and test certificates.
+      label: CA CP/CPS Website URL
+      description: Provide the website you use for policy information for your CA, such as your CP, CPS, and test certificates.
+      placeholder: https://<website>
 
   - type: checkboxes
     id: logs
@@ -31,7 +33,7 @@ body:
     validations:
       required: true
 
-  - type: input
+  - type: textarea
     id: rootcert
     attributes:
       label: Issuer Certificate
