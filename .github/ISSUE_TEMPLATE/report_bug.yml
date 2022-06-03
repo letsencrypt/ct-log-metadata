@@ -1,0 +1,15 @@
+name: Report Bug
+description: Use this template to report a bug with this repository.
+title: "[Bug]: "
+labels: ["triage"]
+assignees:
+  - jcjones
+  - aarongable
+  - pgporada
+
+body:
+  - type: textarea
+    id: bug-report
+    attributes:
+      label: Bug Report
+      description: Please provide details about the bug(s) you found. Paste in any relevant logs too please.
