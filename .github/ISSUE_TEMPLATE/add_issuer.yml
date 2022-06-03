@@ -26,8 +26,8 @@ body:
       label: CT Logs
       description: Which CT logs are you requesting to submit to?
       options:
-        - Oak (production)
-        - Sapling (testing)
+        - label: Oak (production)
+        - label: Sapling (testing)
     validations:
       required: true
 
