@@ -9,6 +9,7 @@ function prep() {
             mv "${FOLDER}" "${FOLDER}.old"
         fi
         mkdir -p "${FOLDER}"
+        touch "${FOLDER}/.gitkeep"
     done
 }
 
@@ -37,7 +38,9 @@ function rename_roots() {
         elif [ "${CN}" == "null" ]; then
             mv "${LOG}/${CRT}" "${LOG}/${O}.crt"
         elif [ "${CN}" == "null" ] && [ "${O}" == "null" ]; then
+            echo "!!!!!!!!!!!!"
             echo "${CRT} is borked"
+            echo "!!!!!!!!!!!!"
         else
             mv "${LOG}/${CRT}" "${LOG}/${O} - ${CN}.crt"
         fi
@@ -75,8 +78,14 @@ function accepted_roots() {
         exit 1
     fi
 
-    find common "${LOG}" -type f ! -name ".gitkeep" -exec openssl x509 -inform pem -in {} \; > "../${LOG}-accepted-roots.txt"
+    find common "${LOG}" -type f ! -name ".gitkeep" -exec openssl x509 -inform pem -in {} \; > "${LOG}-accepted-roots.txt"
 }
+
+command -v certigo > /dev/null 2>&1
+if [ "${?}" -ne 0 ]; then
+    echo "Missing certigo binary. Is it in your PATH?"
+    exit 1
+fi
 
 prep
 
