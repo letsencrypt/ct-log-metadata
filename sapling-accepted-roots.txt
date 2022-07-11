@@ -1,0 +1,1 @@
+issuers/sapling-accepted-roots.txt
