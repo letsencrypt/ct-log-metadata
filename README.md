@@ -2,7 +2,9 @@
 
 This repository contains all Root Certificate Authorities from whom [Let's Encrypt's Certificate Transparency Logs](https://letsencrypt.org/docs/ct-logs/) accept leaf certificates.
 
-Let's Encrypt operates two publicly-accessible [Certificate Transparency](https://www.certificate-transparency.org/what-is-ct) Logs: **Oak**, and **Sapling**.
+Let's Encrypt operates two publicly-accessible [Certificate Transparency](https://www.certificate-transparency.org/what-is-ct):
+* **Oak**
+* **Sapling**
 
 ## Oak
 
