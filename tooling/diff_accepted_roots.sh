@@ -7,7 +7,7 @@ function usage() {
     ./$(basename "${0}") [path-to-shard-folder-1] [path-to-shard-folder-2]
 
     ./$(basename "${0}") oak/2024h1 oak/2024h2
-    ./$(basename "${0}") oak/2023 sapling/202431
+    ./$(basename "${0}") oak/2023 sapling/2024h1
     "
 }
 
