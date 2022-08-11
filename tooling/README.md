@@ -30,7 +30,7 @@ To get all root certificates currently applied to a log shard:
 
 To perform analysis on roots pulled from each shard:
 ```
-./diff_accepted_roots.sh oak/tmp.FOO-2023 oak/tmp.BAR-2024h1
+./diff-accepted-roots.sh oak/tmp.FOO-2023 oak/tmp.BAR-2024h1
 ```
 
 ## Notes
