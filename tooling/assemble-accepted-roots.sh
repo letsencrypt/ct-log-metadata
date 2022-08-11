@@ -11,22 +11,12 @@ function accepted_roots() {
         exit 1
     fi
 
-    if [ -z "${SHARD}" ]; then
-        prettyRed "Provide a shard"
-        exit 1
-    fi
-
     if [ ! -d "${LOG}" ]; then
         prettyRed "Folder ${LOG} does not exist"
         exit 1
     fi
 
-    if [ ! -d "${LOG}/${SHARD}" ]; then
-        prettyRed "Folder ${LOG}/${SHARD} does not exist"
-        exit 1
-    fi
-
-    find "${LOG}/${SHARD}" -type f -exec openssl x509 -inform pem -in {} \; > "accepted_roots/${LOG}-${SHARD}-ctfe-accepted-roots.pem"
+    find "${LOG}/" -maxdepth 1 -type f -name '*.crt' -exec openssl x509 -inform pem -in {} \; > "accepted_roots/${LOG}-${SHARD}-ctfe-accepted-roots.pem"
 }
 
 for SHARD in 2022h2 2023h1; do

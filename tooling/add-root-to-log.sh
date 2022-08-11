@@ -20,9 +20,7 @@ function add_root() {
         exit 1
     fi
 
-    for SHARD in $(find "${LOG}" -maxdepth 1 -mindepth 1 -type d); do
-        cp "${ROOT}" "${SHARD}"
-    done
+    cp "${ROOT}" "${LOG}/"
 }
 
 if [ "${#}" -ne 2 ]; then
@@ -32,6 +30,17 @@ fi
 
 LOG="${1}"
 ROOT="${2}"
+
+if [ -n "${LOG}" ]; then
+    prettyRed "Must specify log"
+    exit 1
+fi
+
+if [ -n "${ROOT}" ]; then
+    prettyRed "Must specify root cert file"
+    exit 1
+fi
+
 add_root "${LOG}" "${ROOT}"
 
 pretty "You should run ./assemble-accepted-roots.sh now"

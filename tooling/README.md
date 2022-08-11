@@ -12,14 +12,7 @@ To use the tooling in this folder, you will need [certigo](https://github.com/sq
 
 # Usage
 
-To get all root certificates currently applied to a log shard:
-
-```
-./pull-roots-from-all-shards.sh
-
-```
-
-Create a new accepted roots file, this will not apply the change to a running shard. That work is done in another repository and requires SRE change control.
+Create a new accepted roots file from the root certificates in each respective logs folder. This will not apply the change to a running shard. That work is done in another repository and requires SRE change control.
 ```
 ./assemble-accepted-roots.sh
 ```
@@ -29,10 +22,15 @@ Add a root certificate to all accepted roots files for all shards in a log. This
 ./add-root-to-log.sh
 ```
 
-Show any different roots between folders
+To get all root certificates currently applied to a log shard:
+
 ```
-./diff_accepted_roots.sh oak/2023 oak/2024h1
-./diff_accepted_roots.sh sapling/2024h1 oak/2022
+./pull-roots-from-all-shards.sh
+```
+
+To perform analysis on roots pulled from each shard:
+```
+./diff_accepted_roots.sh oak/tmp.FOO-2023 oak/tmp.BAR-2024h1
 ```
 
 ## Notes
