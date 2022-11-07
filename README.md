@@ -1,5 +1,11 @@
-# Let's Encrypt Certificate Transparency Logs
+#Let's Encrypt Certificate Transparency Logs
+counter=1
+for root in $(curl -sL https://oak.ct.letsencrypt.org/2023/ct/v1/get-roots | jq -r '.certificates[]'); do
+    echo -n "${root}" | base64 -d > /tmp/${counter}.crt
+    counter=$((counter+1))
+done
 
+openssl x509 -inform DER -in /tmp/${counter}.crt -noout -issuer -serial
 This repository contains all Root Certificate Authorities from whom [Let's Encrypt's Certificate Transparency Logs](https://letsencrypt.org/docs/ct-logs/) accept leaf certificates.
 
 Let's Encrypt operates two publicly-accessible [Certificate Transparency](https://www.certificate-transparency.org/what-is-ct) logs:
