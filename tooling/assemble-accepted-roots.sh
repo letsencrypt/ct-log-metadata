@@ -16,7 +16,10 @@ function accepted_roots() {
         exit 1
     fi
 
-    find "${LOG}/" -maxdepth 1 -type f -name '*.crt' -exec openssl x509 -inform pem -in {} \; > "accepted_roots/${LOG}-${SHARD}-ctfe-accepted-roots.pem"
+    rm "accepted_roots/${LOG}-${SHARD}-ctfe-accepted-roots.pem"
+    find "${LOG}/" -maxdepth 1 -type f -name '*.crt' | sort | while read file; do
+      openssl x509 -inform pem -in "${file}" >> "accepted_roots/${LOG}-${SHARD}-ctfe-accepted-roots.pem"
+    done
 }
 
 for SHARD in 2022h2 2023h1; do
