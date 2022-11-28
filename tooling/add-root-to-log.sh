@@ -22,18 +22,21 @@ function add_root() {
 
     O=$(certigo dump -f PEM --json "${ROOT}" | jq -r '.certificates[].subject.organization[0]' | tr -d '\n' | sed -e 's|/| |g' -e 's|\\||g')
     CN=$(certigo dump -f PEM --json "${ROOT}" | jq -r '.certificates[].subject.common_name' | tr -d '\n' | sed -e 's|/| |g' -e 's|\\||g')
+    SKID=$(certigo dump -f PEM --json "${ROOT}" | jq -r '.certificates[].subject.key_id' | tr -d '\n' | sed -e 's|:||g' | tr '[:upper:]' '[:lower:]')
 
     # We specifically chose not to use the SHA256 of the fingerprint, or a serial, or any other numeric identifier
     # because we want to keep these human readable.
     # The literal null comes from jq
-    if [ "${O}" == "null" ]; then
-        cp "${ROOT}" "${LOG}/${CN}.crt"
-    elif [ "${CN}" == "null" ]; then
-        cp "${ROOT}" "${LOG}/${O}.crt"
-    elif [ "${CN}" == "null" ] && [ "${O}" == "null" ]; then
+    if [ "${SKID}" == "null" ]; then
         prettyRed "${ROOT} is borked"
+    elif [ "${O}" == "null" ]; then
+        cp "${ROOT}" "${LOG}/${CN} - ${SKID}.crt"
+    elif [ "${CN}" == "null" ]; then
+        cp "${ROOT}" "${LOG}/${O} - ${SKID}.crt"
+    elif [ "${CN}" == "null" ] && [ "${O}" == "null" ]; then
+        cp "${ROOT}" "${LOG}/${SKID}.crt"
     else
-        cp "${ROOT}" "${LOG}/${O} - ${CN}.crt"
+        cp "${ROOT}" "${LOG}/${O} - ${CN} - ${SKID}.crt"
     fi
 }
 
