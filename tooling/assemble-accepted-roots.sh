@@ -16,6 +16,8 @@ function accepted_roots() {
         exit 1
     fi
 
+    pretty "Processing ${LOG}-${SHARD} in the background..."
+
     rm "accepted_roots/${LOG}-${SHARD}-ctfe-accepted-roots.pem"
     find "${LOG}/" -maxdepth 1 -type f -name '*.crt' | sort | while read file; do
       openssl x509 -inform pem -in "${file}" >> "accepted_roots/${LOG}-${SHARD}-ctfe-accepted-roots.pem"
@@ -43,5 +45,7 @@ for SHARD in 2022 2023 2024h1 2024h2; do
     fi
     } &
 done
+
+wait
 
 pretty "Done"
