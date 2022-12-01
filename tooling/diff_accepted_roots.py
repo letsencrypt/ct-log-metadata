@@ -40,11 +40,14 @@ PARSER.add_argument(
     help="Write PEMs missing from new here",
 )
 
+
 class RootList:
     def __init__(self):
         self._rootPEMs = set()
+        self._logger = logging.getLogger("RootList")
 
     def load(self, file):
+        self._logger = logging.getLogger(file.name)
         file_contents = file.read_bytes()
 
         try:
@@ -53,11 +56,17 @@ class RootList:
 
         except:
             for pemData in pem.parse(file_contents):
-                data = str(pemData).replace("\n", "").replace("-----BEGIN CERTIFICATE-----","").replace("-----END CERTIFICATE-----","")
+                data = (
+                    str(pemData)
+                    .replace("\n", "")
+                    .replace("-----BEGIN CERTIFICATE-----", "")
+                    .replace("-----END CERTIFICATE-----", "")
+                )
                 self.addRoot(data)
 
     def addRoot(self, pem):
-        assert pem not in self._rootPEMs
+        if pem in self._rootPEMs:
+            self._logger.warning("Duplicate PEM detected: %s", pem)
         self._rootPEMs.add(pem)
 
     def difference(self, other):
@@ -67,10 +76,11 @@ class RootList:
 def certPretty(log, pem):
     try:
         der = base64.b64decode(pem + "==")
-        result = subprocess.run(["certigo", "dump", "-f", "DER", "--json"], capture_output=True, input=der)
+        result = subprocess.run(
+            ["certigo", "dump", "-f", "DER", "--json"], capture_output=True, input=der
+        )
         if result.stderr:
             raise Exception(result.stderr.rstrip())
-
 
         certData = json.loads(result.stdout.decode("UTF-8"))["certificates"][0]
 
@@ -89,11 +99,17 @@ def certPretty(log, pem):
         except:
             skid = ""
 
-        print("- CN=%s, O=%s, SKID=%s" % (cn, o, skid))
+        try:
+            serial = certData["serial"]
+        except:
+            serial = ""
+
+        print("- CN=%s, O=%s, SKID=%s, Serial=%s" % (cn, o, skid, serial))
     except binascii.Error as e:
         log.warning("Couldn't pretty print %s because %s", pem, e)
     except Exception:
         log.exception("Couldn't pretty print %s", pem)
+
 
 def differences(left, leftName, right, rightName, outdir=None):
     diff = left.difference(right)
@@ -105,7 +121,9 @@ def differences(left, leftName, right, rightName, outdir=None):
 
     if outdir and diff:
         for pem in diff:
-            with tempfile.NamedTemporaryFile(mode="wb", dir=outdir, suffix=".der", delete=False) as of:
+            with tempfile.NamedTemporaryFile(
+                mode="wb", dir=outdir, suffix=".der", delete=False
+            ) as of:
                 of.write(base64.b64decode(pem + "=="))
                 log.debug("Wrote to %s", of.name)
 
