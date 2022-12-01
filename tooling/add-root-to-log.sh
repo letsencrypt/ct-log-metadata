@@ -64,9 +64,9 @@ if [ "${?}" -ne 0 ]; then
     exit 1
 fi
 
-for ROOT in ${@}; do
+for ROOT in "${@}"; do
     if [ ! -r "${ROOT}" ]; then
-        prettyRed "Coudldn't find root file"
+        prettyRed "Coudldn't find root file at ${ROOT}"
         exit 1
     fi
 

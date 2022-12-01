@@ -34,7 +34,7 @@ class RootsExporter:
     def __init__(self, log, shard):
         self._log = log
         self._shard = shard
-        self._rootPEMs = []
+        self._rootPEMs = set()
         self._outPath = None
 
     def setOutput(self, path):
@@ -42,16 +42,22 @@ class RootsExporter:
 
     def loadAdditionalRootsFrom(self, path):
         for pemFile in path.glob("*.pem"):
-            self._rootPEMs.append(pemFile.read_text())
+            data = pemFile.read_text()
+            if data in self._rootPEMs:
+                logging.warning("Duplicate found within %s: %s", ADDITIONAL_ROOTS_DIR, pemFile)
+            self._rootPEMs.add(data)
 
     def loadRootsFromCCADB(self, ccadb):
         rootsReader = csv.DictReader(ccadb)
         for row in rootsReader:
-            self._rootPEMs.append(row["PEM"].strip('\''))
+            data = row["PEM"].strip('\'')
+            if data in self._rootPEMs:
+                logging.warning("Duplicate found from CCADB, so something in %s should go away: %s", ADDITIONAL_ROOTS_DIR, data)
+            self._rootPEMs.add(data)
 
     def write(self):
         with self._outPath.open("w") as outFp:
-            for pem in self._rootPEMs:
+            for pem in sorted(list(self._rootPEMs)):
                 outFp.write(pem)
                 outFp.write('\n')
 
