@@ -17,7 +17,12 @@ function add_root() {
     O=$(certigo dump --json "${ROOT}" | jq -r '.certificates[].subject.organization[0]' | tr -d '\n' | sed -e 's|/| |g' -e 's|\\||g')
     CN=$(certigo dump --json "${ROOT}" | jq -r '.certificates[].subject.common_name' | tr -d '\n' | sed -e 's|/| |g' -e 's|\\||g')
     SKID=$(certigo dump --json "${ROOT}" | jq -r '.certificates[].subject.key_id' | tr -d '\n' | sed -e 's|:||g' | tr '[:upper:]' '[:lower:]')
+    SERIAL=$(certigo dump --json "${ROOT}" | jq -r '.certificates[].serial')
     PEM=$(certigo dump --json "${ROOT}" | jq -r '.certificates[].pem')
+
+    if [ "${SKID}" == "null" ] ; then
+        SKID=${SERIAL}
+    fi
 
     # We specifically chose not to use the SHA256 of the fingerprint, or a serial, or any other numeric identifier
     # because we want to keep these human readable.
@@ -45,6 +50,11 @@ shift
 
 if [ -z "${LOG}" ]; then
     prettyRed "Must specify log"
+    exit 1
+fi
+
+if [ ! -d "${LOG}" ]; then
+    prettyRed "${LOG} is not a directory"
     exit 1
 fi
 
