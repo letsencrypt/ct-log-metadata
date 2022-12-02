@@ -1,13 +1,14 @@
 #!/usr/bin/python3
 
 import argparse
-import base64
 import binascii
 import json
 import logging
 import pem
 import subprocess
 import tempfile
+
+from ct_meta_py import CA
 
 from pathlib import Path
 
@@ -43,64 +44,37 @@ PARSER.add_argument(
 
 class RootList:
     def __init__(self):
-        self._rootPublicsToPEMs = dict()
-        self._logger = logging.getLogger("RootList")
+        self._rootPEMsToCAs = dict()
 
     def load(self, file):
-        self._logger = logging.getLogger(file.name)
         file_contents = file.read_bytes()
 
         try:
             for pemData in json.loads(file_contents)["certificates"]:
-                self._addRoot(file.name, pemData)
+                ca = CA(pemData, file)
+                self._rootPEMsToCAs[ca.pem] = ca
 
-        except:
+        except json.decoder.JSONDecodeError:
             for pemData in pem.parse(file_contents):
-                data = (
-                    str(pemData)
-                    .replace("\n", "")
-                    .replace("-----BEGIN CERTIFICATE-----", "")
-                    .replace("-----END CERTIFICATE-----", "")
-                )
-                self._addRoot(file.name, data)
-
-    def _get_pubkey(self, pem):
-        try:
-            der = base64.b64decode(pem + "==")
-            result = subprocess.run(
-                ["openssl", "x509", "-inform", "der", "-pubkey" ,"-noout"], capture_output=True, input=der
-            )
-            if result.stderr:
-                raise Exception(result.stderr.rstrip())
-            return result.stdout.decode("UTF-8")
-
-        except Exception as e:
-            self._logger.exception("Couldn't get Public Key for pem %s", pem)
-
-        return None
-
-    def _addRoot(self, file, pem):
-        pubkey = self._get_pubkey(pem)
-        if pubkey in self._rootPublicsToPEMs:
-            self._logger.warning("Duplicate CA detected in %s: %s", file, pem)
-
-        self._rootPublicsToPEMs[pubkey] = pem
+                ca = CA(str(pemData), file)
+                self._rootPEMsToCAs[ca.pem] = ca
 
     def difference(self, them):
-        our_keys = set(self._rootPublicsToPEMs.keys())
-        their_keys = set(them._rootPublicsToPEMs.keys())
+        our_keys = set(self._rootPEMsToCAs.keys())
+        their_keys = set(them._rootPEMsToCAs.keys())
 
         diffs = []
         for key in our_keys.difference(their_keys):
-            diffs.append(self._rootPublicsToPEMs[key])
+            diffs.append(self._rootPEMsToCAs[key])
         return diffs
 
 
-def certPretty(log, pem):
+def certPretty(log, ca):
     try:
-        der = base64.b64decode(pem + "==")
         result = subprocess.run(
-            ["certigo", "dump", "-f", "DER", "--json"], capture_output=True, input=der
+            ["certigo", "dump", "-f", "DER", "--json"],
+            capture_output=True,
+            input=ca.der,
         )
         if result.stderr:
             raise Exception(result.stderr.rstrip())
@@ -109,29 +83,27 @@ def certPretty(log, pem):
 
         try:
             cn = certData["subject"]["common_name"]
-        except:
+        except Exception:
             cn = ""
 
         try:
             o = certData["subject"]["organization"][0]
-        except:
+        except Exception:
             o = ""
 
         try:
             skid = certData["subject"]["key_id"]
-        except:
+        except Exception:
             skid = ""
 
         try:
             serial = certData["serial"]
-        except:
+        except Exception:
             serial = ""
 
         print("- CN=%s, O=%s, SKID=%s, Serial=%s" % (cn, o, skid, serial))
     except binascii.Error as e:
-        log.warning("Couldn't pretty print %s because %s", pem, e)
-    except Exception:
-        log.exception("Couldn't pretty print %s", pem)
+        log.warning("Couldn't pretty print %s because %s", ca.pem, e)
 
 
 def differences(left, leftName, right, rightName, outdir=None):
@@ -139,14 +111,14 @@ def differences(left, leftName, right, rightName, outdir=None):
     if diff:
         print("%d PEMs in %s but not in %s" % (len(diff), leftName, rightName))
         log = logging.getLogger(leftName)
-        for pem in diff:
-            certPretty(log, pem)
+        for ca in diff:
+            certPretty(log, ca)
 
             if outdir:
                 with tempfile.NamedTemporaryFile(
                     mode="wb", dir=outdir, suffix=".der", delete=False
                 ) as of:
-                    of.write(base64.b64decode(pem + "=="))
+                    of.write(ca.der)
                     log.debug("Wrote to %s", of.name)
 
 

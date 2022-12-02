@@ -1,2 +1,5 @@
 *.old
 */tmp.*
+
+*.pyc*
+__pycache__

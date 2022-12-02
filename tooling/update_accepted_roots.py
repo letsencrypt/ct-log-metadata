@@ -5,12 +5,17 @@ import csv
 import logging
 import requests
 
+from ct_meta_py import CA
+
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).parent.resolve()
 ADDITIONAL_ROOTS_DIR = SCRIPT_DIR / "additional_roots"
 ACCEPTED_ROOTS_DIR = SCRIPT_DIR / "accepted_roots"
-MOZ_CSV = "https://ccadb-public.secure.force.com/mozilla/IncludedRootsDistrustTLSSSLPEMCSV?TrustBitsInclude=Websites"
+MOZ_CSV = (
+    "https://ccadb-public.secure.force.com/mozilla/"
+    + "IncludedRootsDistrustTLSSSLPEMCSV?TrustBitsInclude=Websites"
+)
 
 PARSER = argparse.ArgumentParser(description="Update the accepted roots")
 PARSER.add_argument(
@@ -31,14 +36,10 @@ PARSER.add_argument(
 )
 
 
-def normalizePem(pem):
-    return "\n".join([x.strip() for x in pem.splitlines()])
-
 class RootsExporter:
     def __init__(self, log, shard):
-        self._log = log
-        self._shard = shard
-        self._rootPEMs = {}
+        self._logger = logging.getLogger(f"{log}-{shard}")
+        self._rootPEMsToCAs = {}
         self._outPath = None
 
     def setOutput(self, path):
@@ -46,34 +47,41 @@ class RootsExporter:
 
     def loadAdditionalRootsFrom(self, path):
         for pemFile in path.glob("*.crt"):
-            logging.debug("Loading root %s/%s", path, pemFile)
-            data = normalizePem(pemFile.read_text())
-            if data in self._rootPEMs:
-                logging.warning(
-                    "Duplicate found in additional roots, so either %s or %s should go away.",
-                    self._rootPEMs[data],
-                    str(pemFile)
+            self._logger.debug("Loading root %s/%s", path, pemFile)
+            ca = CA(pemFile.read_text(), pemFile)
+
+            if ca.pem in self._rootPEMsToCAs:
+                self._logger.warning(
+                    "Duplicate found in additional roots, so either [%s] or [%s] should go away.",
+                    self._rootPEMsToCAs[ca.pem].origin,
+                    pemFile,
                 )
-            self._rootPEMs[data] = str(pemFile)
+            self._rootPEMsToCAs[ca.pem] = ca
 
     def loadRootsFromCCADB(self, ccadb):
         rootsReader = csv.DictReader(ccadb)
         for row in rootsReader:
-            data = normalizePem(row["PEM"].strip("'"))
-            if data in self._rootPEMs:
-                logging.warning(
-                    "Duplicate found from CCADB, so %s should go away. Unlinking it. If you disagree, this is a git repo, fix it.",
-                    self._rootPEMs[data]
+            ca = CA(row["PEM"].strip("'"), "CCADB")
+
+            if ca.pem in self._rootPEMsToCAs:
+                self._logger.warning(
+                    "Duplicate found from CCADB, so [%s] should go away. Unlinking it."
+                    + "If you disagree, this is a git repo, fix it.",
+                    self._rootPEMsToCAs[ca.pem].origin,
                 )
-                Path(self._rootPEMs[data]).unlink()
-            self._rootPEMs[data] = "ccadb"
+                print(self._rootPEMsToCAs[ca.pem].pem)
+                print()
+                print(ca.pem)
+                # self._rootPEMsToCAs[ca.pem].origin.unlink()
+            self._rootPEMsToCAs[ca.pem] = ca
 
     def write(self):
-        logging.debug("Writing out %d PEMs to %s", len(self._rootPEMs), self._outPath)
+        self._logger.debug(
+            "Writing out %d PEMs to [%s]", len(self._rootPEMsToCAs), self._outPath
+        )
         with self._outPath.open("w") as outFp:
-            for data in sorted(list(self._rootPEMs)):
-                outFp.write(data)
-                outFp.write("\n")
+            for ca in sorted(self._rootPEMsToCAs.values(), key=lambda x: x.pem):
+                outFp.write(ca.pem)
 
 
 def main():

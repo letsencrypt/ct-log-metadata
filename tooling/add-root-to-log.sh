@@ -20,23 +20,17 @@ function add_root() {
     SERIAL=$(certigo dump --json "${ROOT}" | jq -r '.certificates[].serial')
     PEM=$(certigo dump --json "${ROOT}" | jq -r '.certificates[].pem')
 
-    if [ "${SKID}" == "null" ] ; then
-        SKID=${SERIAL}
-    fi
-
-    # We specifically chose not to use the SHA256 of the fingerprint, or a serial, or any other numeric identifier
-    # because we want to keep these human readable.
     # The literal null comes from jq
     if [ -z "${PEM}" ]; then
         prettyRed "${ROOT} is borked"
     elif [ "${O}" == "null" ]; then
-        echo "${PEM}" > "${LOG}/${CN} - ${SKID}.crt"
+        echo "${PEM}" > "${LOG}/${CN} - ${SERIAL} - ${SKID}.crt"
     elif [ "${CN}" == "null" ]; then
-        echo "${PEM}" > "${LOG}/${O} - ${SKID}.crt"
+        echo "${PEM}" > "${LOG}/${O} - ${SERIAL} - ${SKID}.crt"
     elif [ "${CN}" == "null" ] && [ "${O}" == "null" ]; then
-        echo "${PEM}" > "${LOG}/${SKID}.crt"
+        echo "${PEM}" > "${LOG}/${SERIAL} - ${SKID}.crt"
     else
-        echo "${PEM}" > "${LOG}/${O} - ${CN} - ${SKID}.crt"
+        echo "${PEM}" > "${LOG}/${O} - ${CN} - ${SERIAL} - ${SKID}.crt"
     fi
 }
 
