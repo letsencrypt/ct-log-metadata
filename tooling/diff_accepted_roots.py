@@ -43,7 +43,7 @@ PARSER.add_argument(
 
 class RootList:
     def __init__(self):
-        self._rootPEMs = set()
+        self._rootPublicsToPEMs = dict()
         self._logger = logging.getLogger("RootList")
 
     def load(self, file):
@@ -52,7 +52,7 @@ class RootList:
 
         try:
             for pemData in json.loads(file_contents)["certificates"]:
-                self.addRoot(pemData)
+                self._addRoot(file.name, pemData)
 
         except:
             for pemData in pem.parse(file_contents):
@@ -62,15 +62,38 @@ class RootList:
                     .replace("-----BEGIN CERTIFICATE-----", "")
                     .replace("-----END CERTIFICATE-----", "")
                 )
-                self.addRoot(data)
+                self._addRoot(file.name, data)
 
-    def addRoot(self, pem):
-        if pem in self._rootPEMs:
-            self._logger.warning("Duplicate PEM detected: %s", pem)
-        self._rootPEMs.add(pem)
+    def _get_pubkey(self, pem):
+        try:
+            der = base64.b64decode(pem + "==")
+            result = subprocess.run(
+                ["openssl", "x509", "-inform", "der", "-pubkey" ,"-noout"], capture_output=True, input=der
+            )
+            if result.stderr:
+                raise Exception(result.stderr.rstrip())
+            return result.stdout.decode("UTF-8")
 
-    def difference(self, other):
-        return self._rootPEMs.difference(other._rootPEMs)
+        except Exception as e:
+            self._logger.exception("Couldn't get Public Key for pem %s", pem)
+
+        return None
+
+    def _addRoot(self, file, pem):
+        pubkey = self._get_pubkey(pem)
+        if pubkey in self._rootPublicsToPEMs:
+            self._logger.warning("Duplicate CA detected in %s: %s", file, pem)
+
+        self._rootPublicsToPEMs[pubkey] = pem
+
+    def difference(self, them):
+        our_keys = set(self._rootPublicsToPEMs.keys())
+        their_keys = set(them._rootPublicsToPEMs.keys())
+
+        diffs = []
+        for key in our_keys.difference(their_keys):
+            diffs.append(self._rootPublicsToPEMs[key])
+        return diffs
 
 
 def certPretty(log, pem):
