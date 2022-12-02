@@ -119,13 +119,12 @@ def differences(left, leftName, right, rightName, outdir=None):
         for pem in diff:
             certPretty(log, pem)
 
-    if outdir and diff:
-        for pem in diff:
-            with tempfile.NamedTemporaryFile(
-                mode="wb", dir=outdir, suffix=".der", delete=False
-            ) as of:
-                of.write(base64.b64decode(pem + "=="))
-                log.debug("Wrote to %s", of.name)
+            if outdir:
+                with tempfile.NamedTemporaryFile(
+                    mode="wb", dir=outdir, suffix=".der", delete=False
+                ) as of:
+                    of.write(base64.b64decode(pem + "=="))
+                    log.debug("Wrote to %s", of.name)
 
 
 def main():
