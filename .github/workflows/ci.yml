@@ -23,6 +23,7 @@ jobs:
 
     - name: Analysing the code with pylint
       run: |
+        pip install --user -r tooling/requirements.txt
         python -m pylint -E tooling/
 
     - name: Checking format with Black
@@ -33,19 +34,4 @@ jobs:
       run: |
         python -m flake8 tooling/
 
-  test:
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python 3.9
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.9
-    - name: Install PyTest
-      run: |
-        pip install pytest
-    - name: Run PyTest
-      run: |
-        pytest --junitxml=test-results/junit.xml tooling/
 
