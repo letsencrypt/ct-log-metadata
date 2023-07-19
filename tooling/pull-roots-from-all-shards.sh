@@ -48,7 +48,7 @@ for SHARD in 2022h2 2023h1 2023h2 2024h1 2024h2; do
     { get_roots "sapling" "${SHARD}" "${TEMPDIR}" && rename_roots "sapling" "${SHARD}" "${TEMPDIR}"; } &
 done
 
-for SHARD in 2022 2023 2024h1 2024h2; do
+for SHARD in 2022 2023 2024h1 2024h2 2025h1 2025h2; do
     TEMPDIR="$(mktemp -d -p oak --suffix=-${SHARD})"
     pretty "Backgrounding data gather from oak ${SHARD}"
     { get_roots "oak" "${SHARD}" "${TEMPDIR}" && rename_roots "oak" "${SHARD}" "${TEMPDIR}"; } &
