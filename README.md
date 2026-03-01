@@ -40,3 +40,6 @@ done
 
 openssl x509 -inform DER -in /tmp/${counter}.crt -noout -issuer -serial
 ```
+
+
+https://www.abetterinternet.org/trademarks
