@@ -3,15 +3,16 @@
 source source_me.sh
 
 function usage() {
-    echo -e "EXAMPLE:
-    ./$(basename "${0}") [ct-log-directory] [root-ca-cert] {root-ca-cert}
+    echo -e "USAGE:
+    ./$(basename "${0}") <destination> [root-ca-cert] [root-ca-cert] ...
 
+EXAMPLE:
     ./$(basename "${0}") roots/common example.pem /tmp/roots/*
     "
 }
 
 function add_root() {
-    local LOG="${1}"
+    local DEST="${1}"
     local ROOT="${2}"
 
     O=$(certigo dump --json "${ROOT}" | jq -r '.certificates[].subject.organization[0]' | tr -d '\n' | sed -e 's|/| |g' -e 's|\\||g')
@@ -22,15 +23,15 @@ function add_root() {
 
     # The literal null comes from jq
     if [ -z "${PEM}" ]; then
-        prettyRed "${ROOT} is borked"
+        prettyRed "'${ROOT}' is borked"
     elif [ "${O}" == "null" ]; then
-        echo "${PEM}" > "${LOG}/${CN} - ${SERIAL} - ${SKID}.crt"
+        echo "${PEM}" > "${DEST}/${CN} - ${SERIAL} - ${SKID}.crt"
     elif [ "${CN}" == "null" ]; then
-        echo "${PEM}" > "${LOG}/${O} - ${SERIAL} - ${SKID}.crt"
+        echo "${PEM}" > "${DEST}/${O} - ${SERIAL} - ${SKID}.crt"
     elif [ "${CN}" == "null" ] && [ "${O}" == "null" ]; then
-        echo "${PEM}" > "${LOG}/${SERIAL} - ${SKID}.crt"
+        echo "${PEM}" > "${DEST}/${SERIAL} - ${SKID}.crt"
     else
-        echo "${PEM}" > "${LOG}/${O} - ${CN} - ${SERIAL} - ${SKID}.crt"
+        echo "${PEM}" > "${DEST}/${O} - ${CN} - ${SERIAL} - ${SKID}.crt"
     fi
 }
 
@@ -39,16 +40,16 @@ if [ "${#}" -lt 2 ]; then
     exit 1
 fi
 
-LOG="${1}"
+DEST="${1}"
 shift
 
-if [ -z "${LOG}" ]; then
-    prettyRed "Must specify log"
+if [ -z "${DEST}" ]; then
+    prettyRed "Must specify a destination for the root(s)"
     exit 1
 fi
 
-if [ ! -d "${LOG}" ]; then
-    prettyRed "${LOG} is not a directory"
+if [ ! -d "${DEST}" ]; then
+    prettyRed "'${DEST}' is not a directory"
     exit 1
 fi
 
@@ -60,11 +61,9 @@ fi
 
 for ROOT in "${@}"; do
     if [ ! -r "${ROOT}" ]; then
-        prettyRed "Coudldn't find root file at ${ROOT}"
+        prettyRed "Couldn't find root file at '${ROOT}'"
         exit 1
     fi
 
-    add_root "${LOG}" "${ROOT}"
+    add_root "${DEST}" "${ROOT}"
 done
-
-pretty "You should run ./build_bundle.py now"
