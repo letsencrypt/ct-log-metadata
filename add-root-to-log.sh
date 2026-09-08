@@ -6,7 +6,7 @@ function usage() {
     echo -e "EXAMPLE:
     ./$(basename "${0}") [ct-log-directory] [root-ca-cert] {root-ca-cert}
 
-    ./$(basename "${0}") additional_roots/common example.pem /tmp/roots/*
+    ./$(basename "${0}") roots/common example.pem /tmp/roots/*
     "
 }
 
@@ -67,4 +67,4 @@ for ROOT in "${@}"; do
     add_root "${LOG}" "${ROOT}"
 done
 
-pretty "You should run ./update_accepted_roots.py now"
+pretty "You should run ./build_bundle.py now"
