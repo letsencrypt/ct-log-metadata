@@ -23,14 +23,14 @@ jobs:
 
     - name: Analysing the code with pylint
       run: |
-        python -m pylint -E tooling/
+        python -m pylint -E .
 
     - name: Checking format with Black
       run: |
-        python -m black --check tooling/
+        python -m black --check .
 
     - name: Checking format with Flake8
       run: |
-        python -m flake8 tooling/
+        python -m flake8 .
 
 
