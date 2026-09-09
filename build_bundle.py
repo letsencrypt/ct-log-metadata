@@ -2,6 +2,7 @@
 
 import argparse
 import logging
+import sys
 
 from ct_meta_py import CA
 
@@ -69,7 +70,7 @@ def main():
         logging.error(
             "The common roots dir does not appear to exist: %s", COMMON_ROOTS_DIR
         )
-        return
+        sys.exit(1)
 
     bundler = RootsBundler()
     bundler.loadRootsFrom(COMMON_ROOTS_DIR)
@@ -80,7 +81,7 @@ def main():
                 "The testing roots dir does not appear to exist: %s",
                 TESTING_ROOTS_DIR,
             )
-            return
+            sys.exit(1)
         bundler.loadRootsFrom(TESTING_ROOTS_DIR)
 
     bundler.write(args.output)

@@ -1,6 +1,4 @@
-name: Linting
-
-on: [push]
+on: [push, pull_request]
 
 jobs:
 
@@ -33,4 +31,21 @@ jobs:
       run: |
         python -m flake8 .
 
+  validate-bundles:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v5
+      with:
+        python-version: 3.9
+
+    - name: Build bundles
+      run: |
+        ./build_bundle.py -o bundle-production.pem
+        ./build_bundle.py --testing -o bundle-testing.pem
+
+    - name: Validate bundles
+      run: ./validate-bundles.sh bundle-production.pem bundle-testing.pem
 

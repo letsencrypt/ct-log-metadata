@@ -1,0 +1,57 @@
+name: Publish accepted-roots bundles
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'roots/**'
+      - 'build_bundle.py'
+  workflow_dispatch: {}
+
+concurrency:
+  group: publish-bundles
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v5
+      with:
+        python-version: 3.9
+
+    - name: Build bundles
+      run: |
+        ./build_bundle.py -o bundle-production.pem
+        ./build_bundle.py --testing -o bundle-testing.pem
+
+    - name: Validate bundles
+      run: ./validate-bundles.sh bundle-production.pem bundle-testing.pem
+
+    - name: Generate checksums
+      run: sha256sum bundle-production.pem bundle-testing.pem > SHA256SUMS
+
+    - name: Publish release
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        set -euo pipefail
+
+        TAG="bundles-$(date -u +%Y.%m.%d)-$(git rev-parse --short HEAD)"
+
+        if gh release view "${TAG}" > /dev/null 2>&1; then
+          echo "::error::Release ${TAG} already exists — delete it manually first if you intend to republish this commit."
+          exit 1
+        fi
+
+        gh release create "${TAG}" \
+          bundle-production.pem bundle-testing.pem SHA256SUMS \
+          --title "${TAG}" \
+          --notes "Accepted roots bundle built from commit ${GITHUB_SHA}."
