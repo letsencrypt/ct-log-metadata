@@ -23,7 +23,6 @@ jobs:
 
     - name: Analysing the code with pylint
       run: |
-        pip install --user -r tooling/requirements.txt
         python -m pylint -E tooling/
 
     - name: Checking format with Black
